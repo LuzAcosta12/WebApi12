@@ -9,30 +9,27 @@ namespace WebApi29.Services.Services
     public class UsuarioServices : IUsuarioServices
     {
         private readonly ApplicationDbContext _context;
+
         public UsuarioServices(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        //Lista de usuarios
+        // Lista de usuarios
         public async Task<Response<List<Usuario>>> ObtenerUsuarios()
         {
             try
             {
-
                 List<Usuario> response = await _context.Usuarios.Include(x => x.Roles).ToListAsync();
-
                 return new Response<List<Usuario>>(response, "Lista de usuarios");
-
             }
             catch (Exception ex)
             {
-
-                throw new Exception("Ocurrio un error " + ex.Message);
+                throw new Exception("Ocurrió un error " + ex.Message);
             }
         }
 
-        //Buscar usuario por id
+        // Buscar usuario por id
         public async Task<Response<Usuario>> ById(int id)
         {
             try
@@ -42,11 +39,11 @@ namespace WebApi29.Services.Services
             }
             catch (Exception ex)
             {
-                throw new Exception("Ocurrio un error" + ex.Message);
+                throw new Exception("Ocurrió un error " + ex.Message);
             }
         }
 
-        //Crear usuario
+        // Crear usuario
         public async Task<Response<Usuario>> Crear(UsuarioRequest usuario)
         {
             try
@@ -66,11 +63,11 @@ namespace WebApi29.Services.Services
             }
             catch (Exception ex)
             {
-                throw new Exception("Ocurrio un error " + ex.Message);
+                throw new Exception("Ocurrió un error " + ex.Message);
             }
         }
 
-        //Actualizar datos
+        // Actualizar datos
         public async Task<Response<Usuario>> Actualizar(int id, UsuarioRequest request)
         {
             try
@@ -96,8 +93,7 @@ namespace WebApi29.Services.Services
             }
         }
 
-
-        //Borrar datos
+        // Borrar datos
         public async Task<Response<string>> Eliminar(int id)
         {
             try
@@ -118,6 +114,24 @@ namespace WebApi29.Services.Services
             }
         }
 
+        // 🔐 Buscar usuario por nombre de usuario (para login con JWT)
+        public async Task<Response<Usuario>> ByUserName(string userName)
+        {
+            try
+            {
+                var usuario = await _context.Usuarios
+                    .Include(u => u.Roles)
+                    .FirstOrDefaultAsync(u => u.UserName == userName);
 
+                if (usuario == null)
+                    return new Response<Usuario>("Usuario no encontrado");
+
+                return new Response<Usuario>(usuario);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Ocurrió un error " + ex.Message);
+            }
+        }
     }
 }

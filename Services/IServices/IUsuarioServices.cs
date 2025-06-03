@@ -8,14 +8,21 @@ namespace WebApi29.Services.IServices
     public interface IUsuarioServices
     {
         //Read
-        public Task<Response<List<Usuario>>> ObtenerUsuarios();
+        Task<Response<List<Usuario>>> ObtenerUsuarios();
+
         //Read for Id
-        public Task<Response<Usuario>> ById(int id);
+        Task<Response<Usuario>> ById(int id);
+
+        //Read for UserName
+        Task<Response<Usuario>> ByUserName(string userName);
+
         //Create
-        public Task<Response<Usuario>> Crear(UsuarioRequest usuario);
+        Task<Response<Usuario>> Crear(UsuarioRequest usuario);
+
         //Update
-        public Task<Response<Usuario>> Actualizar(int id, UsuarioRequest request);
+        Task<Response<Usuario>> Actualizar(int id, UsuarioRequest request);
+
         //Delete
-        public Task<Response<string>> Eliminar(int id);
+        Task<Response<string>> Eliminar(int id);
     }
 }

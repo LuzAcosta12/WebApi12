@@ -2,9 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using WebApi29.Services.IServices;
 using WebApi29.Services.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApi29.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("[controller]")]
 
@@ -29,6 +31,7 @@ namespace WebApi29.Controllers
             return Ok(await _rolServices.RolesById(id));
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Crear(RolRequest request)
         {
@@ -36,6 +39,7 @@ namespace WebApi29.Controllers
             return Ok(response);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] RolRequest request)
         {
@@ -43,6 +47,7 @@ namespace WebApi29.Controllers
             return Ok(response);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
