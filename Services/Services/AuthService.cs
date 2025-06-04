@@ -18,13 +18,42 @@ namespace WebApi29.Services.Services
             _jwtSettings = jwtSettings;
         }
 
+        public async Task<Response<string>> Login(LoginRequest request)
+        {
+            // Validación básica
+            if (string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.Password))
+            {
+                return new Response<string>("Usuario y contraseña son obligatorios.");
+            }
+
+            // Asumimos que si el username es "Admin", es rol admin, si no, es usuario
+            string rol = request.UserName == "Admin" ? "Admin" : "Usuario";
+
+            // Simulamos un usuario (no se consulta BD en este reto)
+            var usuario = new Usuario
+            {
+                PkUsuario = 1,
+                UserName = request.UserName,
+                Password = request.Password,
+                FkRol = rol == "Admin" ? 1 : 2
+            };
+
+            // Generar token
+            var token = GenerateToken(usuario);
+
+            return new Response<string>(token, "Inicio de sesión exitoso.");
+        }
+
+        // ✅ Método requerido por IAuthService
         public string GenerateToken(Usuario usuario)
         {
+            string rol = usuario.FkRol == 1 ? "Admin" : "Usuario";
+
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, usuario.PkUsuario.ToString()),
                 new Claim(ClaimTypes.Name, usuario.UserName),
-                new Claim(ClaimTypes.Role, usuario.Roles?.Nombre ?? "Usuario") // Asegúrate que usuario.Roles no sea null y tenga Nombre
+                new Claim(ClaimTypes.Role, rol)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
@@ -41,27 +70,28 @@ namespace WebApi29.Services.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task<Response<string>> Login(LoginRequest request)
+        // (Opcional) Puedes mantener el método privado si lo necesitas en el login simulado
+        private string GenerateToken(Usuario usuario, string rol)
         {
-            // Validar que UserName y Password no sean nulos o vacíos
-            if (string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.Password))
+            var claims = new[]
             {
-                return new Response<string>("El usuario y contraseña son obligatorios");
-            }
-
-            // TODO: Aquí debes validar el usuario en la base de datos
-            // Por ahora simulamos un usuario válido
-            var usuario = new Usuario
-            {
-                PkUsuario = 1,
-                UserName = request.UserName,
-                Roles = new Domain.Entities.Rol { Nombre = "Usuario" } // O el rol que corresponda
+                new Claim(ClaimTypes.NameIdentifier, usuario.PkUsuario.ToString()),
+                new Claim(ClaimTypes.Name, usuario.UserName),
+                new Claim(ClaimTypes.Role, rol)
             };
 
-            // Generar token
-            var token = GenerateToken(usuario);
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            return new Response<string>(token, "Inicio de sesión exitoso");
+            var token = new JwtSecurityToken(
+                issuer: _jwtSettings.Issuer,
+                audience: _jwtSettings.Audience,
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationInMinutes),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

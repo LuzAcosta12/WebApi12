@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using WebApi29.Services.IServices;
 using Microsoft.AspNetCore.Authorization;
 
-
 namespace WebApi29.Controllers
 {
     [Authorize]
@@ -20,21 +19,36 @@ namespace WebApi29.Controllers
             _usuarioServices = usuarioServices;
             _authService = authService;
         }
+
+        // ==========================================
+        // Login (público)
+        // ==========================================
         [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var response = await _usuarioServices.ByUserName(request.UserName);
+            var usuarioResponse = await _usuarioServices.ByUserName(request.UserName);
 
-            if (!response.Succeded || response.Result == null || response.Result.Password != request.Password)
+            if (!usuarioResponse.Succeded || usuarioResponse.Result == null)
             {
                 return Unauthorized(new { mensaje = "Credenciales inválidas" });
             }
 
-            var token = _authService.GenerateToken(response.Result);
+            var usuario = usuarioResponse.Result;
+
+            // Validar contraseña
+            if (usuario.Password != request.Password)
+            {
+                return Unauthorized(new { mensaje = "Credenciales inválidas" });
+            }
+
+            var token = _authService.GenerateToken(usuario);
             return Ok(new { token });
         }
 
+        // ==========================================
+        // Obtener todos los usuarios (requiere token)
+        // ==========================================
         [HttpGet]
         public async Task<IActionResult> GetUsers()
         {
@@ -42,13 +56,19 @@ namespace WebApi29.Controllers
             return Ok(response);
         }
 
-        [HttpGet("id")]
+        // ==========================================
+        // Obtener un usuario por ID (requiere token)
+        // ==========================================
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetUser(int id)
         {
             var response = await _usuarioServices.ById(id);
             return Ok(response);
         }
 
+        // ==========================================
+        // Crear usuario (solo Admin)
+        // ==========================================
         [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> PostUser(UsuarioRequest request)
@@ -56,6 +76,10 @@ namespace WebApi29.Controllers
             var response = await _usuarioServices.Crear(request);
             return Ok(response);
         }
+
+        // ==========================================
+        // Actualizar usuario (solo Admin)
+        // ==========================================
         [Authorize(Roles = "Admin")]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> PutUser(int id, UsuarioRequest request)
@@ -64,6 +88,9 @@ namespace WebApi29.Controllers
             return Ok(response);
         }
 
+        // ==========================================
+        // Eliminar usuario (solo Admin)
+        // ==========================================
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteUser(int id)

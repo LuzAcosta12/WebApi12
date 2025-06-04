@@ -2,6 +2,8 @@
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace WebApi29.Migrations
 {
     /// <inheritdoc />
@@ -47,12 +49,20 @@ namespace WebApi29.Migrations
             migrationBuilder.InsertData(
                 table: "Roles",
                 columns: new[] { "PkRol", "Nombre" },
-                values: new object[] { 1, "sa" });
+                values: new object[,]
+                {
+                    { 1, "Admin" },
+                    { 2, "Usuario" }
+                });
 
             migrationBuilder.InsertData(
                 table: "Usuarios",
                 columns: new[] { "PkUsuario", "FkRol", "Nombre", "Password", "UserName" },
-                values: new object[] { 1, 1, "Majo", "123", "Usuario" });
+                values: new object[,]
+                {
+                    { 1, 1, "luz", "123", "Admin" },
+                    { 2, 2, "acosta", "123", "Usuario" }
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Usuarios_FkRol",

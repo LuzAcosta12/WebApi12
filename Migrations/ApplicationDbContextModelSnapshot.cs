@@ -42,7 +42,12 @@ namespace WebApi29.Migrations
                         new
                         {
                             PkRol = 1,
-                            Nombre = "sa"
+                            Nombre = "Admin"
+                        },
+                        new
+                        {
+                            PkRol = 2,
+                            Nombre = "Usuario"
                         });
                 });
 
@@ -80,7 +85,15 @@ namespace WebApi29.Migrations
                         {
                             PkUsuario = 1,
                             FkRol = 1,
-                            Nombre = "Majo",
+                            Nombre = "luz",
+                            Password = "123",
+                            UserName = "Admin"
+                        },
+                        new
+                        {
+                            PkUsuario = 2,
+                            FkRol = 2,
+                            Nombre = "acosta",
                             Password = "123",
                             UserName = "Usuario"
                         });
